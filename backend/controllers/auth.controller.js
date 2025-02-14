@@ -100,7 +100,7 @@ export const login =  async (req, res) => {
      const isPasswordValid = await bcrypt.compare(password, user.password);
 
      if(!isPasswordValid){
-      return res.status(400).json({success: false, message: "Invalid password. please try again!"});
+      return res.status(400).json({success: false, message: "Invalid Password. Please Try Again!"});
      }
 
      generateTokenAndSetCookie(res, user._id);
@@ -163,45 +163,36 @@ export const forgotPassword =  async (req, res) => {
 }
 
 export const resetPassword = async (req, res) => {
-    try{
-      const { token } = req.params;
-      const { password } = req.body;
+	try {
+		const { token } = req.params;
+		const { password } = req.body;
 
-      const user = await User.findOne({
-        resetPasswordToken: token,
-        resetPasswordExpiresAt: {$gt: Date.now()},
-      });
+		const user = await User.findOne({
+			resetPasswordToken: token,
+			resetPasswordExpiresAt: { $gt: Date.now() },
+		});
 
-      if(!user){
-        return res.status(400).json({
-          success: false,
-          message: "Invalid or expired reset token"
-        });
-      }
+		if (!user) {
+			return res.status(400).json({ success: false, message: "Invalid or expired reset token" });
+		}
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+		// update password
+		const hashedPassword = await bcrypt.hash(password, 10);
 
-      user.password = hashedPassword;
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpiresAt = undefined;
-    
-      await user.save();
+		user.password = hashedPassword;
+		user.resetPasswordToken = undefined;
+		user.resetPasswordExpiresAt = undefined;
+		await user.save();
 
-      await sendResetSuccessEmail(user.email);
+		await sendResetSuccessEmail(user.email);
 
-      res.status(200).json({
-        success: true,
-        message: "Password reset successfully"
-      });
+		res.status(200).json({ success: true, message: "Password reset successful" });
+	} catch (error) {
+		console.log("Error in resetPassword ", error);
+		res.status(400).json({ success: false, message: error.message });
+	}
+};
 
-    }catch(err){
-      console.log("Error in resetPassword", err);
-      res.status(400).json({
-        success: false, 
-        message: err.message
-      });
-    }
-}
 
 export const checkAuth = async (req, res) => {
   try{

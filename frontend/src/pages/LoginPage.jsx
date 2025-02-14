@@ -3,17 +3,20 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import Input from "../components/Input";
+import { useAuthStore } from "../store/authStore";
 
 
 const LoginPage = () => {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const isLoading = false;
+
+    const {isLoading, error, login} = useAuthStore();
 
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
+        await login(email, password)
     }
     return (
         <motion.div initial={{ opacity: 0, y: 20 }}
@@ -26,16 +29,18 @@ const LoginPage = () => {
 					Welcome Back
 				</h2>
 
-                <form onSubmit={handleLogin}>
+       <form onSubmit={handleLogin}>
                 <Input icon={Mail} type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)}/>
 
                 <Input icon={Lock} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}/>
 
-                <div className='flex items-center mb-6'>
-						<Link to='/forgot-password' className='text-sm text-green-400 hover:underline'>
-							Forgot password?
-						</Link>
+         <div className='flex items-center mb-6'>
+						  <Link to='/forgot-password' className='text-sm text-green-400 hover:underline'>
+							    Forgot password?
+						  </Link>
 				</div>
+
+        {error && <p className="text-red-500 font-semibold mb-2">{error}</p>}
 
                 <motion.button
 						whileHover={{ scale: 1.02 }}
